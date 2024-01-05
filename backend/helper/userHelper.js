@@ -26,17 +26,10 @@ module.exports={
             if (emailExist) {
                 return { emailExist: true };
             }
-
-            const phoneExist = await User.findOne({ phone: userdata.phone });
-            if (phoneExist) {
-                return { phoneExist: true };
-            }
-
             const password = await bcrypt.hash(userdata.password, 10);
             const user = new User({
                 username: userdata.username,
                 email: userdata.email,
-                phone: userdata.phone,
                 password: password,
             });
 

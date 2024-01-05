@@ -7,13 +7,10 @@ module.exports = {
         try {
            
             const response = await userHelper.signup(req.body);
-            console.log(response);
 
             if (response.emailExist) {
                 res.json({message:'Email already exists'});
-            } else if (response.phoneExist) {
-                res.json({message:'Phone number already exists'});
-            } else if (response.usercreated) {
+            }else if (response.usercreated) {
                 const UserData=response.usercreated
                 console.log(UserData,'register');
                 const userId = response.usercreated._id;
@@ -32,6 +29,7 @@ module.exports = {
     },
 
     loginUser: async (req, res) => {
+        console.log(req.body,"req.body");
         try {
             const response = await userHelper.forlogin(req.body);
             if (response.login && response.userExist) {

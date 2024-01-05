@@ -24,7 +24,9 @@ app.set('view engine', 'ejs');
 // credentials: true // Allow credentials (cookies, etc.)
 // }));
 
-app.use(CORS())
+// app.use(CORS())
+
+app.use(CORS({ origin: 'http://localhost:5173', credentials: true }));
 
 app.use('/files', express.static('uploads'));
 app.use(bodyParser.json());

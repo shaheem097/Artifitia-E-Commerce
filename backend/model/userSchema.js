@@ -4,9 +4,7 @@ const Schema = mongoose.Schema
 const signupSchema = new Schema({
     username:String,
     email:String,
-    phone:String,
     password:String,
-   
    
 })
 
