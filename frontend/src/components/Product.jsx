@@ -1,9 +1,13 @@
 import { useState } from "react";
 import AddCategoryModal from "./AddCategory";
+import AddSubCategory from "./AddSubCategory";
+import Addproduct from "./Addproduct";
 
 function Product() {
   const [wishlistClicked, setWishlistClicked] = useState(false);
   const [isAddCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
+  const [isSubCategoryOpen, setSubCategoryOpen] = useState(false);
+  const [isAddProducOpen, setAddProductOpen] = useState(false);
 
   const toggleWishlist = () => {
     setWishlistClicked(!wishlistClicked);
@@ -16,8 +20,26 @@ function Product() {
   const closeAddCategoryModal = () => {
     setAddCategoryModalOpen(false);
   };
+
+  const openSubCategoryModal = () => {
+    setSubCategoryOpen(true);
+  };
+  const closeSubCategoryModal = () => {
+    setSubCategoryOpen(false);
+  };
+
+  const openAddProductModal = () => {
+    setAddProductOpen(true);
+  };
+  const closeAddProductModal = () => {
+    setAddProductOpen(false);
+  };
+
+
   return (
     <>
+    <div>
+
       <div className="flex items-center justify-between p-4 text-white">
         <div className="flex items-center">
           <span className="text-black mr-2 ml-16">Home</span>
@@ -30,16 +52,15 @@ function Product() {
           className="bg-yellow-500 rounded-full px-4 py-2">
             Add Category
           </button>
-          {isAddCategoryModalOpen && (
-          <AddCategoryModal
-            onClose={closeAddCategoryModal}
-            
-          />
-        )}
-          <button className="bg-yellow-500 rounded-full px-4 py-2">
+          
+          <button 
+          onClick={openSubCategoryModal}
+          className="bg-yellow-500 rounded-full px-4 py-2">
             Add Subcategory
           </button>
-          <button className="bg-yellow-500 rounded-full px-4 py-2">
+          <button 
+          onClick={openAddProductModal}
+          className="bg-yellow-500 rounded-full px-4 py-2">
             Add Product
           </button>
         </div>
@@ -133,6 +154,25 @@ function Product() {
           </div>
         </div>
       </div>
+      {isAddCategoryModalOpen&&(
+        <AddCategoryModal
+        isOpen={isAddCategoryModalOpen}
+        onClose={closeAddCategoryModal}
+        />
+      )}
+      {isSubCategoryOpen&&(
+        <AddSubCategory
+        isOpen={isSubCategoryOpen}
+        onClose={closeSubCategoryModal}
+        />
+      )}
+      {isAddProducOpen&&(
+        <Addproduct
+        isOpen={isAddProducOpen}
+        onClose={closeAddProductModal}
+        />
+      )}
+    </div>
       
     </>
   );
