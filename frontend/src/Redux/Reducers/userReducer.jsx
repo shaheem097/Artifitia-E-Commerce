@@ -9,13 +9,11 @@ const singleUser=createSlice({
     reducers:{
         setUserDetails:(state,action)=>{
 
-            console.log(action.payload,"ppppppppppppppppppppppppppppppppp");
 
             state.userData = action.payload
-            console.log(state.userData,"dataaaaaaaaaaaaaaaaaaaa");
         },
         setTokens:(state,action)=>{
-            console.log(action.payload,'tokeennnnnnnn');
+            
             state.token=action.payload
         },
           logoutUser: (state) => {

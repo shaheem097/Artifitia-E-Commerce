@@ -1,11 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User=require('../model/userSchema')
+const Category=require('../model/categorySchema')
+const Product=require('../model/ProductSchema')
 
 
 
 module.exports={
 
+    //create jwt token
     createToken: async (userId, username) => {
 
         const JWT_SECRET = process.env.JWT_SECRET;
@@ -20,6 +23,7 @@ module.exports={
         }
     },
 
+    // signup user
     signup: async (userdata) => {
         try {
             const emailExist = await User.findOne({ email: userdata.email });
@@ -41,6 +45,7 @@ module.exports={
         }
     },
 
+    // login user
     forlogin: async (loginData) => {
         try {
             let userExist = await User.findOne({ email: loginData.email });
@@ -60,6 +65,99 @@ module.exports={
         }
     },
 
+    //add category
+   addCategory : async (category) => {
+
+        try {
+            // Check if the category already exists
+            const existingCategory = await Category.findOne({ categoryName: category });
     
+            if (existingCategory) {
+                return ({categoryExist:true});
+            }else{
+
+    
+            // Category does not exist, create a new document
+            const newCategory = new Category({
+                categoryName: category
+            });
+    
+            // Save the new category to the database
+            const savedCategory = await newCategory.save();
+    
+            return savedCategory;
+        }
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
   
+
+    //add subcategory
+
+    addSubcategory : async (categoryName, subcategoryName) => {
+        try {
+            // Find the category by name
+            const category = await Category.findOne({ categoryName });
+    
+            if (!category) {
+                // Category does not exist, you can handle this case as needed
+                console.log('Category does not exist');
+                return null;
+            }
+    
+            // Check if the subcategory already exists in the category
+            const existingSubcategory = category.subcategories.find(sub => sub.subcategoryName === subcategoryName);
+    
+            if (existingSubcategory) {
+                // Subcategory already exists, you can handle this case as needed
+                console.log('Subcategory already exists');
+                return ({subcategoryexist:true});
+            }
+    
+            // Add the new subcategory to the category's subcategories array
+            category.subcategories.push({ subcategoryName });
+    
+            // Save the updated category to the database
+            const updatedCategory = await category.save();
+    
+            return updatedCategory;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+
+    //get all categories
+    getAllCategories : async () => {
+        try {
+            // Retrieve all categories from the database
+            const categories = await Category.find();
+    
+            return categories;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+
+    //add product
+    addProduct : async (productData) => {
+        try {
+            // Create a new product instance with the provided data
+            const newProduct = new Product(productData);
+    
+            // Save the new product to the database
+            const savedProduct = await newProduct.save();
+    
+            return savedProduct;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+
+
 }

@@ -1,16 +1,47 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import axios from '../Axios/axios'
+import { toast } from 'react-toastify';
 
 // eslint-disable-next-line react/prop-types
 function AddSubCategory({ isOpen, onClose }) {
   const [subcategoryName, setSubCategoryName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [categories] = useState(['Category 1', 'Category 2']);
+  const [error, setError] = useState('');
 
-  const handleAddCategory = () => {
-    // Handle the logic for adding the category here
-    console.log('Adding category:', subcategoryName, 'Selected category:', selectedCategory);
-    // You may want to dispatch an action to handle the state or perform any other necessary logic
-    onClose(); // Close the modal after adding category
+  const categories = useSelector((state) => state.product.allcategory);
+   const handleAddCategory = async () => {
+    // Form validation
+    if (!selectedCategory) {
+      setError('Please select a category.');
+      return;
+    }
+
+    if (!subcategoryName.trim()) {
+      setError('Please enter a subcategory name.');
+      return;
+    }
+
+    // Clear any previous errors
+    setError('');
+
+    try {
+      // Make the API call using Axios
+      const response = await axios.post('/addsubcategory', {
+        categoryName: selectedCategory,
+        subcategoryName: subcategoryName.trim(),
+      });
+      if (response.data.status) {
+        toast.success(response.data.message);
+        onClose();
+      } else {
+        toast.error(response.data.message);
+      }
+     
+    } catch (error) {
+      console.error('Error adding subcategory:', error);
+      // Handle error, show a message to the user, etc.
+    }
   };
 
   return (
@@ -27,7 +58,7 @@ function AddSubCategory({ isOpen, onClose }) {
           >
             <option value="" disabled>Select category</option>
             {categories.map((category, index) => (
-              <option key={index} value={category}>{category}</option>
+    <option key={index} value={category.categoryName}>{category.categoryName}</option>
             ))}
           </select>
           <input
@@ -37,7 +68,8 @@ function AddSubCategory({ isOpen, onClose }) {
             value={subcategoryName}
             onChange={(e) => setSubCategoryName(e.target.value)}
           />
-         
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
           <div className="flex space-x-4">
             <button className="bg-yellow-500 rounded-lg px-6 py-2 text-white" onClick={handleAddCategory}>
               Add

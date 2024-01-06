@@ -1,13 +1,40 @@
-import { useState } from "react";
+import { useState,useEffect} from "react";
+import { useDispatch,  } from "react-redux";
 import AddCategoryModal from "./AddCategory";
 import AddSubCategory from "./AddSubCategory";
 import Addproduct from "./Addproduct";
+import axios from "../Axios/axios";
+import { setcategoryDetails } from "../Redux/Reducers/productReducer";
 
 function Product() {
   const [wishlistClicked, setWishlistClicked] = useState(false);
   const [isAddCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
   const [isSubCategoryOpen, setSubCategoryOpen] = useState(false);
   const [isAddProducOpen, setAddProductOpen] = useState(false);
+  const [allcategory,setAllCategory]=useState([])
+
+  const dispatch = useDispatch();
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get("/getallcategory");
+      if (response.data.status) {
+        // Update the Redux store with the fetched categories
+        setAllCategory(response.data.data)
+        dispatch(setcategoryDetails(response.data.data));
+      } else {
+        console.error("Failed to fetch categories");
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error.message);
+    }
+  };
+
+
+  useEffect(() => {
+  
+    fetchCategories();
+  }, []);
 
   const toggleWishlist = () => {
     setWishlistClicked(!wishlistClicked);
