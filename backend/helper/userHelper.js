@@ -160,4 +160,15 @@ module.exports={
     },
 
 
+    //Get all products
+    getAllProducts: async () => {
+        try {
+            // Retrieve all products from the database
+            const products = await Product.find();
+            return products;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
 }

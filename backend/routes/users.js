@@ -23,4 +23,7 @@ router.get('/getallcategory',userController.getAllCategories)
 //add product
 router.post('/addproduct',userController.addProduct)
 
+//Get all Product
+router.get('/getallproduct',userController.getAllProduct)
+
 module.exports = router;

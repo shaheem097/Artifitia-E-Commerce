@@ -103,13 +103,25 @@ module.exports = {
 
     //add product
     addProduct : async (req, res) => {
-        console.log(req.body,'hhhhhhhhhhh');
         try {
             const productData = req.body;
             const response = await userHelper.addProduct(productData);
     
             // You can handle the response as needed
-            res.status(200).json({status:true, message: 'Product added successfully', data: response });
+            res.status(200).json({status:true, message: 'Product added', data: response });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({status:false, message: 'Internal Server Error' });
+        }
+    },
+
+    //Get all product
+    getAllProduct:async(req,res)=>{
+        try {
+            const products = await userHelper.getAllProducts();
+    
+            // You can handle the response as needed
+            res.status(200).json({status:true,data: products });
         } catch (error) {
             console.error(error);
             res.status(500).json({status:false, message: 'Internal Server Error' });
