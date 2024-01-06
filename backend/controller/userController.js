@@ -103,6 +103,7 @@ module.exports = {
 
     //add product
     addProduct : async (req, res) => {
+        console.log(req.body,'hhhhhhhhhhh');
         try {
             const productData = req.body;
             const response = await userHelper.addProduct(productData);
