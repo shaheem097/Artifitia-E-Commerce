@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User=require('../model/userSchema')
 const Category=require('../model/categorySchema')
 const Product=require('../model/ProductSchema')
+const Wishlist=require('../model/WishlistSchema')
 
 
 
@@ -192,5 +193,92 @@ module.exports={
             console.error(error);
             throw error;
         }
-    }
+    },
+
+    //add to wishlist 
+    addToWishlist:async(productId ,userId )=>{
+        try {
+        
+            const product = await Product.findById(productId);
+            
+            if (!product) {
+              return res.status(404).json({ message: 'Product not found' });
+            }
+        
+            let wishlist = await Wishlist.findOne({ userId });
+        
+            if (!wishlist) {
+              wishlist = new Wishlist({ userId, products: [] });
+            }
+        
+            const existingProduct = wishlist.products.find(item => item.productId === productId);
+        
+            if (existingProduct) {
+              return ({message:'Product already in whishlist'})
+            }
+        
+            wishlist.products.push({
+              productId,
+              title: product.title,
+              variants: product.variants,
+              category: product.category,
+              subcategory: product.subcategory,
+              description: product.description,
+              imageUrls: product.imageUrls,
+            });
+        
+            await wishlist.save();
+            return({ message: 'Product added to wishlist successfully', wishlist });
+          } catch (error) {
+            console.error(error);
+            return({ message: 'Internal server error' });
+          }
+    },
+
+    //remove from wishlist
+    removeFromwhishlist : async (productId, userId) => {
+        try {
+          const wishlist = await Wishlist.findOne({ userId });
+      
+          if (!wishlist) {
+            throw new Error('Wishlist not found');
+          }
+      
+          const productIndex = wishlist.products.findIndex(item => item.productId === productId);
+      
+          if (productIndex === -1) {
+            throw new Error('Product not found in wishlist');
+          }
+      
+          wishlist.products.splice(productIndex, 1);
+      
+          await wishlist.save();
+      
+          return { message: 'Product removed from wishlist successfully', wishlist };
+        } catch (error) {
+          console.error(error);
+          throw new Error('Error removing product from wishlist');
+        }
+      } ,
+      
+      //Get all wish list items
+
+      getWishlistItem:async(userId)=>{
+        try {
+            // Find the wishlist document for the given userId
+            const wishlist = await Wishlist.findOne({ userId });
+        
+            // If no wishlist is found, you can handle it accordingly
+            if (!wishlist) {
+              return { message: 'No wishlist found for the user', products: [],status:false };
+            }
+        
+            // Return only the products array from the wishlist
+            const { products } = wishlist;
+            return { message: 'Wishlist products retrieved successfully', products };
+          } catch (error) {
+            console.error(error);
+            throw new Error('Error retrieving wishlist products');
+          }
+      }
 }

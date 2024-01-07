@@ -29,4 +29,13 @@ router.get('/getallproduct',userController.getAllProduct)
 //Edit product
 router.post('/editproduct',userController.editProduct)
 
+//add to wishlist
+router.post('/addtowishlist',userController.addToWishlist)
+
+//remove from whishlist
+router.delete('/removewishlist/:productId/:userId',userController.removeFromwhishlist)
+
+//Get all wishlist
+router.get('/getallwishlist/:userId',userController.getAllWishlist)
+
 module.exports = router;

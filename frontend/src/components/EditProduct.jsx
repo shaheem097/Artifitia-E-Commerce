@@ -4,11 +4,14 @@ import Axios from "axios";
 import axios from "../Axios/axios";
 import cloudinary from "cloudinary-core";
 import { toast } from "react-toastify";
-
+import {  useNavigate } from "react-router-dom";
 const cl = cloudinary.Cloudinary.new({ cloud_name: "dhzusekrd" });
 
 // eslint-disable-next-line react/prop-types
 function EditProduct({ onClose, product }) {
+
+  const navigate=useNavigate()
+
   const categories = useSelector((state) => state.product.allcategory);
 
   // eslint-disable-next-line react/prop-types
@@ -144,7 +147,7 @@ function EditProduct({ onClose, product }) {
           );
 
           const fileUrl = response.data.secure_url;
-
+          if(fileUrl){
           // Update the imageUrls in the edited product data
           const editedProduct = {
             _id: product._id,
@@ -162,12 +165,18 @@ function EditProduct({ onClose, product }) {
           if (res.data.status) {
             toast.success(res.data.message);
             onClose();
+            navigate('/')
             setIsLoading(false);
           } else {
             toast.error(res.data.message);
           }
+        }
+
         } catch (error) {
+          
           // Handle Cloudinary upload error
+          setIsLoading(false);
+          toast.error("Somthing went wrong");
           console.error("Error uploading image to Cloudinary:", error);
         }
       } else {
@@ -190,6 +199,7 @@ function EditProduct({ onClose, product }) {
         if (res.data.status) {
           toast.success(res.data.message);
           setIsLoading(false);
+          navigate('/')
           onClose();
         } else {
           toast.error(res.data.message);

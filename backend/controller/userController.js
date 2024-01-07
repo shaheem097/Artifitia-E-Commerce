@@ -144,7 +144,57 @@ module.exports = {
         }
     },
 
+    //add to wishlist
+    addToWishlist: async (req, res) => {
 
+        try {
+            const { productId, userId } = req.body;
+           
+            const response = await userHelper.addToWishlist(productId, userId);
+
+            // You can handle the response as needed
+            res.status(200).json({status:true, message: 'Item added to wishlist', data: response });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({status:false, message: 'Internal Server Error' });
+        }
+    },
+
+    //remove from whishlist
+    removeFromwhishlist: async (req, res) => {
+
+        try {
+            const { productId, userId } = req.params;
+           
+            const response = await userHelper.removeFromwhishlist(productId, userId);
+
+            // You can handle the response as needed
+            res.status(200).json({status:true, message: 'Removed from whishlist', data: response });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({status:false, message: 'Internal Server Error' });
+        }
+
+    },
     
+    //Get all wishlist item
+    getAllWishlist: async (req, res) => {
+
+        try {
+            const {  userId } = req.params;
+           
+            const response = await userHelper.getWishlistItem( userId);
+            if(response.status===false){
+                res.json({status:false});
+            }else{
+                res.status(200).json({status:true, data: response });
+            }
+          
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({status:false, message: 'Internal Server Error' });
+        }
+
+    },
       
 };

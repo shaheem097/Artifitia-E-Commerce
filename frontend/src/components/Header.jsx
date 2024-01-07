@@ -3,8 +3,13 @@ import { logoutUser } from '../Redux/Reducers/userReducer';
 import { useNavigate } from 'react-router-dom';
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
+import Wishlist from './Wishlist';
+import { useState } from 'react';
 
 function Header() {
+
+  const [showWishlist, setShowWishlist] = useState(false);
+
   const wishlistCount = 3;
   const cartCount = 5;
 
@@ -35,6 +40,12 @@ function Header() {
             navigate("/login");
           }
         });
+
+        
+      };
+
+      const toggleWishlist = () => {
+        setShowWishlist(!showWishlist);
       };
   return (
     <div className="sticky bg-sky-900 shadow p-8 flex justify-between items-center">
@@ -58,12 +69,16 @@ function Header() {
       <div className="flex items-center">
         {/* Wishlist icon with count */}
         <div className="relative ml-4 flex items-center">
-          <img src="/assets/whishlist.png" className='w-6 h-6 filter invert cursor-pointer' alt="" />
+          <img src="/assets/whishlist.png"
+           onClick={toggleWishlist}
+          className='w-6 h-6 filter invert cursor-pointer' alt="" />
           {wishlistCount > 0 && (
             <div className="ml-2 bg-yellow-500 w-9 h-5 rounded-full flex items-center justify-center text-white">
               {wishlistCount}
             </div>
           )}
+
+     {showWishlist && <Wishlist onClose={toggleWishlist} />}
         </div>
         
         {/* Cart icon with count */}
