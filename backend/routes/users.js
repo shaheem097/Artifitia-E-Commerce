@@ -26,4 +26,7 @@ router.post('/addproduct',userController.addProduct)
 //Get all Product
 router.get('/getallproduct',userController.getAllProduct)
 
+//Edit product
+router.post('/editproduct',userController.editProduct)
+
 module.exports = router;

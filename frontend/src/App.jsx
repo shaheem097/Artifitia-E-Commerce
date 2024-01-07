@@ -4,6 +4,7 @@ import Login from './Pages/Login';
 import Home from './Pages/Home.jsx';
 import { useState,useEffect } from "react";
 import { useSelector } from 'react-redux';
+import ProductDetails from "./Pages/ProductDetails.jsx";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <Routes>
        
         <Route path="/" element={userjwtToken ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/productdetails/:productId" element={userjwtToken ? <ProductDetails /> : <Navigate to="/login" />} />
         <Route path="/login" element={!userjwtToken ? <Login /> : <Navigate to="/" />} />
         <Route path="/signup" element={!userjwtToken ? <Signup /> : <Navigate to="/" />} />
 

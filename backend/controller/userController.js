@@ -126,7 +126,23 @@ module.exports = {
             console.error(error);
             res.status(500).json({status:false, message: 'Internal Server Error' });
         }
-    }
+    },
+
+    //Edit Product
+    editProduct : async (req, res) => {
+
+        try {
+            const { _id: productId, ...updatedData } = req.body;
+           
+            const response = await userHelper.updateProduct(productId, updatedData);
+
+            // You can handle the response as needed
+            res.status(200).json({status:true, message: 'Product Edited', data: response });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({status:false, message: 'Internal Server Error' });
+        }
+    },
 
 
     

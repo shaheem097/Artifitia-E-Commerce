@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import Axios from "axios";
 import axios from "../Axios/axios";
@@ -8,148 +8,192 @@ import { toast } from "react-toastify";
 const cl = cloudinary.Cloudinary.new({ cloud_name: "dhzusekrd" });
 
 // eslint-disable-next-line react/prop-types
-function Addproduct({ isOpen, onClose }) {
+function EditProduct({ onClose, product }) {
   const categories = useSelector((state) => state.product.allcategory);
 
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("");
-  const [title, setTitle] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [variants, setVariants] = useState([
-    { ram: "", price: "", quantity: 1 },
-  ]);
-  const [description, setDescription] = useState("");
+  // eslint-disable-next-line react/prop-types
+  const [title, setTitle] = useState(product.title);
+  // eslint-disable-next-line react/prop-types
+  const [variants, setVariants] = useState(product.variants);
+  // eslint-disable-next-line react/prop-types
+  const [category, setCategory] = useState(product.category);
+  // eslint-disable-next-line react/prop-types
+  const [subcategory, setSubcategory] = useState(product.subcategory);
+  // eslint-disable-next-line react/prop-types
+  const [description, setDescription] = useState(product.description);
+  const [imagePreview, setImagePreview] = useState(
+    // eslint-disable-next-line react/prop-types
+    product.imageUrls && product.imageUrls.length > 0
+      ? // eslint-disable-next-line react/prop-types
+        product.imageUrls[0]
+      : null
+  );
 
   const [titleError, setTitleError] = useState("");
   const [variantsError, setVariantsError] = useState([]);
   const [categoryError, setCategoryError] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
   const [imageError, setImageError] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e, index, key) => {
-    const newVariants = [...variants];
-    newVariants[index][key] = e.target.value;
-    setVariants(newVariants);
+  useEffect(() => {
+    validateForm();
+  }, [title, variants, category, description]);
+
+  const validateForm = () => {
+    let isValid = true;
+
+    // Title validation
+    if (!title.trim()) {
+      setTitleError("Title is required");
+      isValid = false;
+    } else {
+      setTitleError("");
+    }
+
+    // Variant validation
+    const variantErrors = variants.map((variant) => {
+      const errors = {};
+      if (!variant.ram.trim()) {
+        errors.ram = "RAM is required";
+        isValid = false;
+      }
+      if (!variant.price || isNaN(variant.price) || variant.price <= 0) {
+        errors.price = "Price must be a positive number";
+        isValid = false;
+      }
+      if (
+        !variant.quantity ||
+        isNaN(variant.quantity) ||
+        variant.quantity < 0
+      ) {
+        errors.quantity = "Quantity must be a non-negative number";
+        isValid = false;
+      }
+      return errors;
+    });
+
+    setVariantsError(variantErrors);
+
+    // Category validation
+    if (!category.trim()) {
+      setCategoryError("Category is required");
+      isValid = false;
+    } else {
+      setCategoryError("");
+    }
+
+    // Description validation
+    if (!description.trim()) {
+      setDescriptionError("Description is required");
+      isValid = false;
+    } else {
+      setDescriptionError("");
+    }
+
+    return isValid;
   };
 
-  const handleArrowClick = (index, direction) => {
-    const newVariants = [...variants];
-    const step = 1;
-    newVariants[index].quantity = Math.max(
-      1,
-      newVariants[index].quantity + direction * step
-    );
-    setVariants(newVariants);
+  const handleInputChange = (e, index, field) => {
+    // Create a deep copy of the variants array and the modified variant
+    const updatedVariants = [...variants];
+    updatedVariants[index] = { ...variants[index], [field]: e.target.value };
+    setVariants(updatedVariants);
+
+    // Clear the error for the modified field
+    const updatedErrors = [...variantsError];
+    updatedErrors[index] = { ...variantsError[index], [field]: "" };
+    setVariantsError(updatedErrors);
   };
 
-  const handleAddVariant = () => {
-    setVariants([...variants, { ram: "", price: "", quantity: 1 }]);
+  const handleArrowClick = (index, value) => {
+    const updatedVariants = [...variants];
+    updatedVariants[index].quantity += value;
+    setVariants(updatedVariants);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    setSelectedImageFile(file);
 
+    // Update the imagePreview state
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleAddProduct = async () => {
-    // Reset errors before performing new validation
-    setTitleError("");
-    setVariantsError([]);
-    setCategoryError("");
-    setDescriptionError("");
-    setImageError("");
+  const handleEditProduct = async () => {
+    if (validateForm()) {
+      // Check if a new image is selected
+      if (selectedImageFile) {
+        // Upload the new image to Cloudinary
+        try {
+          setIsLoading(true);
+          const formData = new FormData();
+          formData.append("file", selectedImageFile);
+          formData.append("upload_preset", "image_preset");
 
-    // Perform validation for each input field
-    let isValid = true;
+          const response = await Axios.post(
+            "https://api.cloudinary.com/v1_1/dhzusekrd/image/upload",
+            formData
+          );
 
-    if (title.trim() === "") {
-      setTitleError("Add Title");
-      isValid = false;
-    }
+          const fileUrl = response.data.secure_url;
 
-    // Validate variants
-    const variantsValidation = variants.map((variant) => {
-      const errors = {};
+          // Update the imageUrls in the edited product data
+          const editedProduct = {
+            _id: product._id,
+            title,
+            variants,
+            category,
+            subcategory,
+            description,
+            imageUrls: [fileUrl],
+          };
 
-      if (variant.ram.trim() === "") {
-        errors.ram = "Add Ram";
-        isValid = false;
-      }
+          // Make the edit product API call
+          const res = await axios.post("/editproduct", editedProduct);
 
-      if (variant.price.trim() === "") {
-        errors.price = "Add Price";
-        isValid = false;
-      }
-
-      return errors;
-    });
-
-    setVariantsError(variantsValidation);
-
-    if (selectedCategory === "") {
-      setCategoryError("Select Category");
-      isValid = false;
-    }
-
-    if (description.trim() === "") {
-      setDescriptionError("Add Description");
-      isValid = false;
-    }
-
-    if (!imagePreview) {
-      setImageError("Select Image");
-      isValid = false;
-    }
-
-    // If the form is valid, you can proceed with adding the product
-    if (isValid) {
-      setIsLoading(true);
-      // Upload image to Cloudinary
-      try {
-        console.log("cccccccccccccccccccc");
-        const formData = new FormData();
-        formData.append("file", imagePreview);
-        formData.append("upload_preset", "image_preset");
-
-        const response = await Axios.post(
-          "https://api.cloudinary.com/v1_1/dhzusekrd/image/upload",
-          formData
-        );
-
-        const fileUrl = response.data.secure_url;
-        console.log("Image uploaded successfully:", fileUrl);
-
-        // Now, you can include the fileUrl in the add product API call
-        const productData = {
-          title: title,
-          variants: variants,
-          category: selectedCategory,
-          subcategory: selectedSubcategory,
-          description: description,
-          imageUrls: [fileUrl],
+          if (res.data.status) {
+            toast.success(res.data.message);
+            onClose();
+            setIsLoading(false);
+          } else {
+            toast.error(res.data.message);
+          }
+        } catch (error) {
+          // Handle Cloudinary upload error
+          console.error("Error uploading image to Cloudinary:", error);
+        }
+      } else {
+        // If no new image is selected, proceed with the existing image
+        const editedProduct = {
+          _id: product._id,
+          title,
+          variants,
+          category,
+          subcategory,
+          description,
+          imageUrls: [imagePreview],
         };
 
-        // Make the add product API call
-        const res = await axios.post("/addproduct", productData);
+        console.log(editedProduct);
+
+        // Make the edit product API call
+        const res = await axios.post("/editproduct", editedProduct);
 
         if (res.data.status) {
           toast.success(res.data.message);
-          onClose();
           setIsLoading(false);
+          onClose();
         } else {
           toast.error(res.data.message);
-          setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Error uploading image to Cloudinary:", error);
       }
     }
   };
@@ -159,14 +203,12 @@ function Addproduct({ isOpen, onClose }) {
       <div className="bg-black bg-opacity-50 absolute top-0 left-0 w-full h-full"></div>
 
       <div
-        className={`fixed top-0 left-0 w-full h-full flex items-center justify-center ${
-          isOpen ? "" : "hidden"
-        }`}
+        className={`fixed top-0 left-0 w-full h-full flex items-center justify-center`}
       >
         <div className="bg-white p-6 rounded-lg w-3/7 min-h-5/6 h-auto flex flex-col items-center justify-center">
-          <h2 className="text-xl font-bold mb-4 ">Add Product</h2>
+          <h2 className="text-xl font-bold mb-4">Edit Product</h2>
 
-          <div className="flex mr-auto ml-16  ">
+          <div className="flex mr-auto ml-16">
             <label className="text-sm font-semibold mb-2 text-gray-400">
               Title:
             </label>
@@ -181,14 +223,12 @@ function Addproduct({ isOpen, onClose }) {
           {titleError && (
             <p className="text-red-500 text-sm ml-2">{titleError}</p>
           )}
-
           <div className=" mr-auto  ml-16">
             <label className="text-sm  font-semibold   text-gray-400">
               varient:
             </label>
-
             {variants.map((variant, index) => (
-              <div key={index} className="flex mr-auto ml-36   mb-2">
+              <div key={index} className="flex mr-auto ml-36 mb-2">
                 <label className="text-sm font-semibold mb-2 text-gray-400 mt-1">
                   Ram:
                 </label>
@@ -249,17 +289,16 @@ function Addproduct({ isOpen, onClose }) {
                         {variantsError[index].price}
                       </p>
                     )}
+                    {variantsError[index].quantity && (
+                      <p className="text-red-500 text-sm ml-1">
+                        {variantsError[index].quantity}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
             ))}
           </div>
-          <button
-            className="ml-auto mr-5 bg-[#292524] rounded-lg px-2 py-2 text-white mb-3"
-            onClick={handleAddVariant}
-          >
-            Add Variants
-          </button>
 
           <div className="flex mr-auto ml-16">
             <label className="text-sm font-semibold mb-2 text-gray-400 mt-1">
@@ -267,10 +306,11 @@ function Addproduct({ isOpen, onClose }) {
             </label>
             <select
               className="border border-gray-300 rounded-lg px-3 py-2 mb-3 ml-[85px] w-[400px]"
-              value={selectedCategory}
+              value={category}
               onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setSelectedSubcategory(""); // Reset subcategory when category changes
+                setCategory(e.target.value);
+                // Reset subcategory when category changes
+                setSubcategory("");
               }}
             >
               <option value="" disabled>
@@ -280,7 +320,7 @@ function Addproduct({ isOpen, onClose }) {
                 <option key={category._id} value={category.categoryName}>
                   {category.categoryName}
                 </option>
-              ))}
+              ))}{" "}
             </select>
           </div>
           {categoryError && (
@@ -294,18 +334,17 @@ function Addproduct({ isOpen, onClose }) {
             </label>
             <select
               className="border border-gray-300 rounded-lg px-3 py-2 ml-[59px] w-[400px]"
-              value={selectedSubcategory}
-              onChange={(e) => setSelectedSubcategory(e.target.value)}
-              disabled={!selectedCategory} // Disable subcategory dropdown if no category selected
+              value={subcategory}
+              onChange={(e) => setSubcategory(e.target.value)}
+              disabled={!category} // Disable subcategory dropdown if no category selected
             >
               <option value="" disabled>
                 Select subcategory
               </option>
-              {selectedCategory &&
+              {category &&
+                // Find the selected category in the list and map its subcategories
                 categories
-                  .find(
-                    (category) => category.categoryName === selectedCategory
-                  )
+                  .find((c) => c.categoryName === category)
                   ?.subcategories.map((subcategory) => (
                     <option
                       key={subcategory._id}
@@ -317,7 +356,7 @@ function Addproduct({ isOpen, onClose }) {
             </select>
           </div>
 
-          <div className="flex  mr-auto ml-16 ">
+          <div className="flex  mr-auto ml-16">
             <label className="text-sm font-semibold mb-2 text-gray-400 mt-1">
               {" "}
               Description:
@@ -336,44 +375,43 @@ function Addproduct({ isOpen, onClose }) {
             <p className="text-red-500 text-sm ml-2">{descriptionError}</p>
           )}
           <div className="flex  mr-auto ml-16 mb-4">
-            <label className="text-sm font-semibold text-gray-400 mt-12">
+            <label className="text-sm font-semibold text-gray-400 mt-12 ">
               {" "}
-              Upload image:
+              Click to change image:
+              <img src="/assets/hand.png" className="w-5 h-5" alt="" />
             </label>
             <div className="flex items-center justify-center w-full w-[120px] h-[120px]">
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-[120px] h-[120px] ml-16 object-cover rounded-lg mt-3"
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-[120px] h-[120px] ml-6 object-cover rounded-lg mt-3"
+              />
+
+              <label className="ml-4 w-[130px] flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div className="flex flex-col items-center justify-center pt-8 pb-6">
+                  <svg
+                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 16"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                    />
+                  </svg>
+                </div>
+                <input
+                  id="your-file-input-id"
+                  type="file"
+                  className="hidden"
+                  onChange={handleImageChange}
                 />
-              ) : (
-                <label className="ml-16 w-[130px] flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-                  <div className="flex flex-col items-center justify-center pt-8 pb-6">
-                    <svg
-                      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 20 16"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    id="your-file-input-id"
-                    type="file"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </label>
-              )}
+              </label>
             </div>
           </div>
           {imageError && (
@@ -381,14 +419,15 @@ function Addproduct({ isOpen, onClose }) {
           )}
 
           <div className="mt-auto ml-auto flex space-x-4">
+            {/* Save button should be placed outside the modal to avoid being inside the overlay */}
             <button
               className={`bg-yellow-500 rounded-lg px-6 py-2 text-white ${
                 isLoading && "opacity-50 cursor-not-allowed"
               }`}
-              onClick={handleAddProduct}
+              onClick={handleEditProduct}
               disabled={isLoading}
             >
-              {isLoading ? "Adding..." : "Add"}
+              {isLoading ? "Sacing..." : "save"}
             </button>
             <button
               className="bg-gray-300 rounded-lg px-4 py-2"
@@ -403,4 +442,4 @@ function Addproduct({ isOpen, onClose }) {
   );
 }
 
-export default Addproduct;
+export default EditProduct;

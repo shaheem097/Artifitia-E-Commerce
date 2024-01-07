@@ -171,4 +171,26 @@ module.exports={
             throw error;
         }
     },
+
+    //Edit product
+    updateProduct : async (productId, updatedData) => {
+        try {
+            // Find the product by ID
+            const existingProduct = await Product.findById(productId);
+    
+            if (!existingProduct) {
+                throw new Error('Product not found');
+            }
+    
+            // Update the existing product with the new data
+            Object.assign(existingProduct, updatedData);
+    
+            // Save the updated product to the database
+            const updatedProduct = await existingProduct.save();
+            return updatedProduct;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
 }
