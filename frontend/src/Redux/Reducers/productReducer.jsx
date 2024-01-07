@@ -18,8 +18,6 @@ const product=createSlice({
     }
 });
 
-
-  
   export const { setProductDetails,setcategoryDetails} = product.actions;
   export default product.reducer ;
   

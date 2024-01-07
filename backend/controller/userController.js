@@ -196,5 +196,22 @@ module.exports = {
         }
 
     },
+
+    //Search products
+    searchResult:async (req, res) => {
+        try {
+            const { searchTerm } = req.body;
+            console.log(searchTerm,'ggggggg');
+            const result = await userHelper.searchProducts(searchTerm);
+            if(result.status===false){
+                res.json({message:"No result found"})
+            }else{
+                res.status(200).json(result);
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
       
 };

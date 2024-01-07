@@ -38,4 +38,7 @@ router.delete('/removewishlist/:productId/:userId',userController.removeFromwhis
 //Get all wishlist
 router.get('/getallwishlist/:userId',userController.getAllWishlist)
 
+//Search Product
+router.post('/search',userController.searchResult)
+
 module.exports = router;

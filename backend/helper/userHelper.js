@@ -280,5 +280,26 @@ module.exports={
             console.error(error);
             throw new Error('Error retrieving wishlist products');
           }
-      }
+      },
+
+      //search products
+      searchProducts: async (searchTerm) => {
+        try {
+            const products = await Product.find({
+                $or: [
+                    { title: new RegExp(searchTerm, 'i') },
+                    { category: new RegExp(searchTerm, 'i') },
+                    { subcategory: new RegExp(searchTerm, 'i') }
+                ]
+            });
+            console.log(products,'ddddddddddd');
+            if(products.length>0 &&products){
+                return products;
+            }else{
+                return ({status:false,message:"no result found"})
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 }
