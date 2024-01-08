@@ -5,10 +5,12 @@ import AddSubCategory from "./AddSubCategory";
 import Addproduct from "./Addproduct";
 import axios from "../Axios/axios";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   setProductDetails,
   setcategoryDetails,
 } from "../Redux/Reducers/productReducer";
+import { useSubcategories } from "../Context/SubcategoryContext";
 
 function Product() {
   const [isAddCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
@@ -21,8 +23,12 @@ function Product() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [wishlistClickedProducts, setWishlistClickedProducts] = useState({});
+  const [selectedSubcategoryNames, setSelectedSubcategoryNames] = useState([]);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { selectedSubcategories, updateSelectedSubcategories } =
+    useSubcategories();
 
   const userId = useSelector((state) => state.user.userData.payload._id);
 
@@ -148,12 +154,48 @@ function Product() {
   };
 
   const handleSubCategoryClick = (subCategory) => {
-    // Toggle selected subcategory
-    setSelectedSubCategory((prevSubCategory) =>
-      prevSubCategory === subCategory ? null : subCategory
+    const isSubcategorySelected = selectedSubcategories.some(
+      (selectedSub) => selectedSub._id === subCategory._id
     );
+
+    // Update the selectedSubcategories based on the checkbox state
+    if (isSubcategorySelected) {
+      // Remove the subcategory if it's already selected
+      updateSelectedSubcategories((prevSubcategories) =>
+        prevSubcategories.filter(
+          (selectedSub) => selectedSub._id !== subCategory._id
+        )
+      );
+    } else {
+      // Add the subcategory if it's not selected
+      updateSelectedSubcategories((prevSubcategories) => [
+        ...prevSubcategories,
+        subCategory,
+      ]);
+    }
   };
 
+ 
+
+  const handleFilter = () => {
+    try {
+      // Navigate to the filterproducts route with subcategories in the URL
+      navigate(
+        `/filterproducts?subcategories=${selectedSubcategoryNames.join(",")}`
+      );
+    } catch (error) {
+      console.error("Error navigating to filter products:", error);
+    }
+  };
+
+  const handleFilterButtonClick = () => {
+    const subcategoryNames = selectedSubcategories.map(
+      (subCategory) => subCategory.subcategoryName
+    );
+    setSelectedSubcategoryNames(subcategoryNames);
+    handleFilter();
+  };
+  
   return (
     <>
       <div>
@@ -188,9 +230,17 @@ function Product() {
           {/* Left Div */}
 
           <div className="w-1/4 p-4 text-black">
-            <h5 className="ml-16 text-blue-500 font-bold text-lg mb-2 font-roboto">
-              Categories
-            </h5>
+            <div className="flex ">
+              <h5 className="ml-16 text-blue-500 font-bold text-lg mb-2 font-roboto">
+                Categories
+              </h5>
+              <button
+                onClick={handleFilterButtonClick}
+                className="text-sm bg-gray-600 rounded-lg px-2 text-white ml-20"
+              >
+                filter
+              </button>
+            </div>
 
             <div className="flex flex-col ml-16">
               {/* Map over allcategory array and render category cards */}
@@ -272,21 +322,21 @@ function Product() {
                     className=" ml-60 cursor-pointer "
                     onClick={() => toggleWishlist(product._id)}
                   >
-                      <div className=" absolute  rounded-full w-8 h-8 bg-gray-200 p-2  cursor-pointer">
-                    <img
-                      src={
-                        wishlistClickedProducts[product._id]
-                          ? "/assets/whishlist3.png"
-                          : "/assets/whishlist.png"
-                      }
-                      alt="wishlist icon"
-                      className="w-6 h-4 "
-                    />
-                  </div>
+                    <div className=" rounded-full  bg-gray-200 p-2  cursor-pointer">
+                      <img
+                        src={
+                          wishlistClickedProducts[product._id]
+                            ? "/assets/whishlist3.png"
+                            : "/assets/whishlist.png"
+                        }
+                        alt="wishlist icon"
+                        className="w-36 h-8 "
+                      />
+                    </div>
                   </div>
 
                   <Link to={`/productdetails/${product._id}`}>
-                    <div className="mt-4 px-5 pb-5 mt-[150px]">
+                    <div className="mt-4 px-5 pb-5 mt-[130px]">
                       <h5 className="text-xl font-bold tracking-tight text-slate-900">
                         {product.title}
                       </h5>

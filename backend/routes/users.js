@@ -41,4 +41,7 @@ router.get('/getallwishlist/:userId',userController.getAllWishlist)
 //Search Product
 router.post('/search',userController.searchResult)
 
+//Filter products
+router.post('/filter',userController.filterProduct)
+
 module.exports = router;

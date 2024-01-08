@@ -300,5 +300,18 @@ module.exports={
         } catch (error) {
             throw error;
         }
-    }
+    },
+
+    filterProduct: async ({ categoryNames }) => {
+        try {
+          const products = await Product.find({
+            subcategory: { $in: categoryNames }
+          });
+      
+          return products;
+        } catch (error) {
+          throw error;
+        }
+      },
+      
 }
