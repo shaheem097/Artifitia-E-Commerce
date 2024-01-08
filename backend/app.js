@@ -19,24 +19,9 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://artifitia-nd8tepsb1-shaheems-projects-ce091292.vercel.app',
-  'https://artifitia.onrender.com',
-];
 
-app.use(
-  CORS({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
+
+app.use(CORS({ origin: 'https://artifitia.onrender.com', credentials: true }));
 
 app.use('/files', express.static('uploads'));
 app.use(bodyParser.json());
