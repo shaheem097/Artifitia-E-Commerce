@@ -4,7 +4,7 @@ import { store } from '../Redux/store';
 
 const axiosInterceptorInstance = axios.create({
   
-  baseURL: 'http://localhost:3000',
+  baseURL: 'https://artifitia.onrender.com',
 });
 
 
