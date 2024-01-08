@@ -304,6 +304,7 @@ module.exports={
 
     filterProduct: async ({ categoryNames }) => {
         try {
+            console.log(categoryNames);
           const products = await Product.find({
             subcategory: { $in: categoryNames }
           });
