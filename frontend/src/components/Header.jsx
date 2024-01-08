@@ -5,15 +5,20 @@ import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import Wishlist from './Wishlist';
 import { useState } from 'react';
+import { useSearch } from '../Context/SerachContext';
+
 
 function Header() {
 
-  const [showWishlist, setShowWishlist] = useState(false);
+  
+  const navigate = useNavigate();
 
-  const wishlistCount = 3;
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [searchTerm,setSearchTerm]=useState('')
+
+  const wishlistCount = 1;
   const cartCount = 5;
 
-  const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const handleLogout = () => {
@@ -47,6 +52,21 @@ function Header() {
       const toggleWishlist = () => {
         setShowWishlist(!showWishlist);
       };
+
+      const {  updateSearchTerm } = useSearch();
+
+      const handleSearch = async () => {
+        try {
+          navigate('/searchresult');
+          updateSearchTerm(searchTerm); // Update the context with the search term
+        } catch (error) {
+          console.error('Error navigating to search results:', error);
+        }
+      };
+
+      
+      
+
   return (
     <div className="sticky bg-sky-900 shadow p-8 flex justify-between items-center">
       <div className="flex items-center w-full justify-center">
@@ -56,10 +76,13 @@ function Header() {
             type="text"
             placeholder="Search any things"
             className="w-96 px-4 py-3 rounded-xl border border-white bg-white text-black focus:outline-none z-10"
-          />
-          <button className="py-3 px-6 bg-yellow-500 rounded-l-2xl rounded-r-xl ml-[-95px] z-20 text-white">
-            {/* Search icon or text */}
-            {/* You can replace this with your search icon or text */}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+         />
+         <button
+            onClick={handleSearch}
+            className="py-3 px-6 bg-yellow-500 rounded-l-2xl rounded-r-xl ml-[-95px] z-20 text-white"
+          >
             Search
           </button>
         </div>
@@ -96,6 +119,7 @@ function Header() {
         onClick={handleLogout}
         className="text-white ml-4 cursor-pointer">Logout</span>
       </div>
+     
     </div>
   );
 }

@@ -292,11 +292,10 @@ module.exports={
                     { subcategory: new RegExp(searchTerm, 'i') }
                 ]
             });
-            console.log(products,'ddddddddddd');
             if(products.length>0 &&products){
                 return products;
             }else{
-                return ({status:false,message:"no result found"})
+                return ({status:false,message:"no result found",products})
             }
         } catch (error) {
             throw error;

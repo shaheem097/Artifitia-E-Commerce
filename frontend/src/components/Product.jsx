@@ -8,10 +8,7 @@ import { Link } from "react-router-dom";
 import {
   setProductDetails,
   setcategoryDetails,
-  
 } from "../Redux/Reducers/productReducer";
-import  setWishlistData from '../Redux/Reducers/WishlistReducer'
-
 
 function Product() {
   const [isAddCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
@@ -27,7 +24,7 @@ function Product() {
 
   const dispatch = useDispatch();
 
-  const userId = useSelector((state) => state.user.userData.payload._id); 
+  const userId = useSelector((state) => state.user.userData.payload._id);
 
   const productsPerPage = 6;
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -61,8 +58,11 @@ function Product() {
     try {
       const response = await axios.get("/getallproduct");
       if (response.data.status) {
+        const allProduct = response.data.data.reverse();
+
         // Update the Redux store with the fetched categories
-        setAllProduct(response.data.data);
+        setAllProduct(allProduct);
+
         dispatch(setProductDetails(response.data.data));
       } else {
         console.error("Failed to fetch products");
@@ -90,11 +90,11 @@ function Product() {
       const isProductClicked = wishlistClickedProducts[productId];
 
       if (!isProductClicked) {
-        console.log('added');
+        console.log("added");
         // Add to wishlist
-        await axios.post("/addtowishlist", { productId,userId });
+        await axios.post("/addtowishlist", { productId, userId });
       } else {
-        console.log('removed');
+        console.log("removed");
         // Remove from wishlist
         await axios.delete(`/removewishlist/${productId}/${userId}`);
       }
@@ -255,64 +255,72 @@ function Product() {
 
           {/* Right Div */}
           <div className="flex flex-wrap w-3/4 h-auto p-4">
-  {/* Product Card */}
-  {currentProducts.map((product) => (
-    <>
-    <div className=" ml-5 mb-4 w-72 h-72 border border-gray-400 max-w-xs overflow-hidden rounded-lg bg-white shadow-md">
-      <Link to={`/productdetails/${product._id}`}>
-        <img
-          className="h-40 w-full rounded-t-lg object-cover mb-[-150px]"
-          src={product.imageUrls[0]}
-          alt="product image"
-        />
-      </Link>
+            {/* Product Card */}
+            {currentProducts.map((product) => (
+              <>
+                <div className=" ml-5 mb-4 w-72 h-72 border border-gray-400 max-w-xs overflow-hidden rounded-lg bg-white shadow-md">
+                  <Link to={`/productdetails/${product._id}`}>
+                    <img
+                      className="h-40 w-full rounded-t-lg object-cover mb-[-150px]"
+                      src={product.imageUrls[0]}
+                      alt="product image"
+                    />
+                  </Link>
 
-      {/* Wishlist Icon */}
-      <div className=" ml-64 cursor-pointer " onClick={() => toggleWishlist(product._id)}>
-          <img
-            src={wishlistClickedProducts[product._id] ? "/assets/whishlist3.png" : "/assets/whishlist.png"}
-            alt="wishlist icon"
-            className="w-6 h-6 "
-          />
-        </div>
+                  {/* Wishlist Icon */}
+                  <div
+                    className=" ml-60 cursor-pointer "
+                    onClick={() => toggleWishlist(product._id)}
+                  >
+                      <div className=" absolute  rounded-full w-8 h-8 bg-gray-200 p-2  cursor-pointer">
+                    <img
+                      src={
+                        wishlistClickedProducts[product._id]
+                          ? "/assets/whishlist3.png"
+                          : "/assets/whishlist.png"
+                      }
+                      alt="wishlist icon"
+                      className="w-6 h-4 "
+                    />
+                  </div>
+                  </div>
 
-      <Link to={`/productdetails/${product._id}`}>
-        <div className="mt-4 px-5 pb-5 mt-[130px]">
-          <h5 className="text-xl font-semibold tracking-tight text-slate-900">
-            {product.title}
-          </h5>
+                  <Link to={`/productdetails/${product._id}`}>
+                    <div className="mt-4 px-5 pb-5 mt-[150px]">
+                      <h5 className="text-xl font-bold tracking-tight text-slate-900">
+                        {product.title}
+                      </h5>
 
-          <div className="flex items-center justify-between">
-            <p>
-              <span className="text-3xl font-bold text-slate-900">
-                ₹ {product.variants[0].price}
-              </span>
-            </p>
-          </div>
-          <div className="mt-2.5 mb-5 flex items-center">
-            <span className="mr-2 rounded bg-yellow-200 px-2.5 py-0.5 text-xs font-semibold">
-              5.0
-            </span>
-            {[...Array(4)].map((_, index) => (
-              <svg
-                key={index}
-                aria-hidden="true"
-                className="h-5 w-5 text-yellow-300"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-              </svg>
+                      <div className="flex items-center justify-between">
+                        <p>
+                          <span className="text-2xl font-semibold text-slate-600">
+                            ₹ {product.variants[0].price}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="mt-2.5 mb-5 flex items-center">
+                        <span className="mr-2 rounded bg-yellow-200 px-2.5 py-0.5 text-xs font-semibold">
+                          5.0
+                        </span>
+                        {[...Array(4)].map((_, index) => (
+                          <svg
+                            key={index}
+                            aria-hidden="true"
+                            className="h-5 w-5 text-yellow-300"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                          </svg>
+                        ))}
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </>
             ))}
           </div>
-        </div>
-      </Link>
-    </div>
-    </>
-  ))}
-</div>
-
         </div>
         <div className="flex justify-center ">
           {Array.from({ length: totalPages }, (_, index) => (
@@ -321,7 +329,7 @@ function Product() {
               className={`${
                 currentPage === index + 1
                   ? "bg-yellow-500 text-white"
-                  : "bg-white text-black"
+                  : "bg-white text-yellow-500"
               } rounded-full px-3 py-1 mx-2 focus:outline-none`}
               onClick={() => paginate(index + 1)}
             >

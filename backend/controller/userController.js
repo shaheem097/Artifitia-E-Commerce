@@ -201,12 +201,12 @@ module.exports = {
     searchResult:async (req, res) => {
         try {
             const { searchTerm } = req.body;
-            console.log(searchTerm,'ggggggg');
             const result = await userHelper.searchProducts(searchTerm);
             if(result.status===false){
-                res.json({message:"No result found"})
+                const product=result.products
+                res.json({message:"No result found",product})
             }else{
-                res.status(200).json(result);
+                res.status(200).json({status:true,result});
             }
         } catch (error) {
             console.error(error);

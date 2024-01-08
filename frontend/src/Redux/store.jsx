@@ -16,7 +16,7 @@ const persistedReducer = persistReducer(
   combineReducers({
     user: userData,
     product:productData,
-    whishlist:whishlistData
+    whishlist:whishlistData,
   })
 );
 
